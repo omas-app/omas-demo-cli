@@ -5,20 +5,18 @@
 Register-EngineEvent -SourceIdentifier "OrderReceived" -Action {
     
     # the received order
-    $fullfilment = $event.SourceEventArgs.MessageData
+    $fulfillment = $event.SourceEventArgs.MessageData
     
-    #pending orders need to be acknolage as soon as possible
-    if($fullfilment.state -eq "RECEIVED") {
-
+    if($fulfillment.state -eq "RECEIVED") {
         # we asking the user for order accept or decline
 
         $title = "Order Confirmation"
-        $question = "Do you want to accept the order $($fullfilment.name)?"
+        $question = "Do you want to accept the order $($fulfillment.name)?"
         $choices = @("&Accept", "&Decline")
 
         $decision = $Host.UI.PromptForChoice($title, $question, $choices, 1)
 
-        $endpoint = "https://api.omas.app/v1/$($fullfilment.name):confirm"
+        $endpoint = "https://api.omas.app/v1/$($fulfillment.name):confirm"
 
         $now = Get-Date
 
@@ -30,25 +28,25 @@ Register-EngineEvent -SourceIdentifier "OrderReceived" -Action {
                  }
             }
 
-            $fullfilment = Invoke-RestMethod -Authentication Bearer -Token $accessToken -Uri $endpoint -Method Post -Body $body
+            $fulfillment = Invoke-RestMethod -Authentication Bearer -Token $accessToken -Uri $endpoint -Method Post -Body $body
 
             Write-Host "order accepted"
             
             # we emit a custom event for script reuse
-            New-Event -SourceIdentifier "OrderAccepted" -MessageData $fullfilment | Out-Null
+            New-Event -SourceIdentifier "OrderAccepted" -MessageData $fulfillment | Out-Null
         } else {
             $body = @{
                  decline = "vendor closed"
             }
 
-            $fullfilment = Invoke-RestMethod -Authentication Bearer -Token $accessToken -Uri $endpoint -Method Post -Body $body
+            $fulfillment = Invoke-RestMethod -Authentication Bearer -Token $accessToken -Uri $endpoint -Method Post -Body $body
 
             Write-Host "order declined"
         }
     }
 } | Out-Null
 
-# a custom event OrderReceived with the Fullfilment will get emitted
+# a custom event OrderReceived with the fulfillment will get emitted
 .\04_acknowledge-orders.ps1 
 
 

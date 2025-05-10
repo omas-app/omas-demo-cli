@@ -6,22 +6,22 @@
 Register-EngineEvent -SourceIdentifier "OrderDelivered" -Action {
     
     # the processed order
-    $fullfilment = $event.SourceEventArgs.MessageData
+    $fulfillment = $event.SourceEventArgs.MessageData
 
-    $endpoint = "https://api.omas.app/v1/$($fullfilment.name):complete"
+    $endpoint = "https://api.omas.app/v1/$($fulfillment.name):complete"
 
     #we set the order to completing
     #we could still cancel or settle with different payment channel ourself
     $body = @{
     }
 
-    $fullfilment = Invoke-RestMethod -Authentication Bearer -Token $accessToken -Uri $endpoint -Method Post -Body $body
+    $fulfillment = Invoke-RestMethod -Authentication Bearer -Token $accessToken -Uri $endpoint -Method Post -Body $body
     Write-Host "order completing"
 
     #the order will get finalized with the COMPLETED or SETTLED state
 } | Out-Null
 
-# a custom event OrderDelivered with the Fullfilment will get emitted
+# a custom event OrderDelivered with the fulfillment will get emitted
 .\07_deliver-orders.ps1 
 
 

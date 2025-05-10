@@ -5,20 +5,20 @@
 Register-EngineEvent -SourceIdentifier "OrderReceived" -Action {
     
     # the received order
-    $fullfilment = $event.SourceEventArgs.MessageData
+    $fulfillment = $event.SourceEventArgs.MessageData
 
-    #pending orders need to be acknolage as soon as possible
-    if($fullfilment.state -eq "PENDING") {
+    #pending orders need to be acknowledged as soon as possible
+    if($fulfillment.state -eq "PENDING") {
 
-        $endpoint = "https://api.omas.app/v1/$($fullfilment.name):confirm"
+        $endpoint = "https://api.omas.app/v1/$($fulfillment.name):confirm"
 
         $body = @{
             ack    = @{}
         }
 
-        $fullfilment = Invoke-RestMethod -Authentication Bearer -Token $accessToken -Uri $endpoint -Method Post -Body $body
+        $fulfillment = Invoke-RestMethod -Authentication Bearer -Token $accessToken -Uri $endpoint -Method Post -Body $body
 
-        Write-Host "order $($fullfilment.name) acknowledged"
+        Write-Host "order $($fulfillment.name) acknowledged"
 
         # we stop the processing and wait for the updated order
         # optional we could already confirm it 
@@ -26,7 +26,7 @@ Register-EngineEvent -SourceIdentifier "OrderReceived" -Action {
 } | Out-Null
 
 # we are using monitor orders method
-# it emits an custom event OrderReceived with the Fullfilment 
+# it emits an custom event OrderReceived with the fulfillment 
 #.\03-a_monitor-orders.ps1 
 .\03-b_poll-orders.ps1
 

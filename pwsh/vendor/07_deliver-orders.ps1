@@ -5,9 +5,9 @@
 Register-EngineEvent -SourceIdentifier "OrderProcessed" -Action {
     
     # the processed order
-    $fullfilment = $event.SourceEventArgs.MessageData
+    $fulfillment = $event.SourceEventArgs.MessageData
 
-    $endpoint = "https://api.omas.app/v1/$($fullfilment.name):deliver"
+    $endpoint = "https://api.omas.app/v1/$($fulfillment.name):deliver"
 
     #we simulate the deliver step
     
@@ -26,7 +26,7 @@ Register-EngineEvent -SourceIdentifier "OrderProcessed" -Action {
         completed = $false
     }
 
-    $fullfilment = Invoke-RestMethod -Authentication Bearer -Token $accessToken -Uri $endpoint -Method Post -Body $body
+    $fulfillment = Invoke-RestMethod -Authentication Bearer -Token $accessToken -Uri $endpoint -Method Post -Body $body
     Write-Host "order delivering"
 
     #delay delivery
@@ -40,14 +40,14 @@ Register-EngineEvent -SourceIdentifier "OrderProcessed" -Action {
         completed = $true
     }
 
-    $fullfilment = Invoke-RestMethod -Authentication Bearer -Token $accessToken -Uri $endpoint -Method Post -Body $body
+    $fulfillment = Invoke-RestMethod -Authentication Bearer -Token $accessToken -Uri $endpoint -Method Post -Body $body
     Write-Host "order delivered"
 
     #we emit a custom event for script reuse
-    New-Event -SourceIdentifier "OrderDelivered" -MessageData $fullfilment | Out-Null    
+    New-Event -SourceIdentifier "OrderDelivered" -MessageData $fulfillment | Out-Null    
 } | Out-Null
 
-# a custom event OrderAccepted with the Fullfilment will get emitted
+# a custom event OrderAccepted with the fulfillment will get emitted
 .\06_process-orders.ps1 
 
 
