@@ -1,0 +1,1 @@
+$global:vendor = "demo-vendor"
