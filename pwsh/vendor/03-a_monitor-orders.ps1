@@ -32,8 +32,8 @@ Write-Host "reading streaming result"
 $stream = $response.Content.ReadAsStreamAsync().Result
 $reader = New-Object System.IO.StreamReader($stream)
 
-while (-not $reader.EndOfStream) {
-    $msg = $reader.ReadLine() | ConvertFrom-Json $line
+while (-not $reader.EndOfStream) {   
+    $msg = $reader.ReadLine() | ConvertFrom-Json
 
     if(!$msg.seq) {
         Write-Host "pulse received: $($msg.ts)"        
@@ -44,6 +44,8 @@ while (-not $reader.EndOfStream) {
 
     #emit custom event for script reuse
     New-Event -SourceIdentifier "OrderReceived" -MessageData $msg.fulfillment | Out-Null
+
+    Write-Output $msg.fulfillment #return order
 
     #set nextSeq for resubscription to the stream 
     $nextSeq = $msg.seq + 1

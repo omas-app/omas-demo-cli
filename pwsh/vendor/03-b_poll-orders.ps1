@@ -22,19 +22,21 @@ do {
 
     Write-Host "polling for modified orders"
     $response = Invoke-RestMethod -Authentication Bearer -Token $accessToken -Uri "$($endpoint)?pageToken=$($pageToken)"
-
-    if(!$response.fulfillments) {
+    
+    if($response.fulfillments) {
         Write-Host "$($response.fulfillments.Length) orders polled"       
 
         # process orders
-        # pending orders need to be acknowledge (asap) and in a short time period after accepted or declined
+        # pending orders need to be acknowledge (asap) and after accepted or declined
         # all new state changes will get polled again  
         
         #emit custom event for script reuse
         $response.fulfillments | ForEach-Object {
             New-Event -SourceIdentifier "OrderReceived" -MessageData $_ | Out-Null
-        }
 
+            Write-Output $_ #return order
+        }
+ 
     } else {
         Write-Host "no modified orders"
     }
@@ -48,6 +50,6 @@ do {
     $pageToken = $response.nextPageToken
 
     # wait till next poll, the period should be short
-    # request is a long poll
+    # request is a long poll, but errors return instantly
     Start-Sleep -Seconds 1
 } while ($true)
